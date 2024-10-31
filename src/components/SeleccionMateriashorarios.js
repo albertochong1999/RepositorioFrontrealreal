@@ -20,7 +20,7 @@ const SeleccionMateriasHorarios = () => {
 
     const fetchUserData = useCallback(async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/user-academic-info`, { headers: getAuthHeaders() });  // URL actualizada
+            const response = await axios.get(`${API_URL}/api/user-academic-info`, { headers: getAuthHeaders() });  // URL actualizada
             setUserCredits(response.data.totalCredits);
             setPassedCourses(response.data.approvedSubjects || []);
         } catch (error) {
@@ -31,7 +31,7 @@ const SeleccionMateriasHorarios = () => {
 
     const fetchAvailableMaterias = useCallback(async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/all-subjects`, { headers: getAuthHeaders() });  // URL actualizada
+            const response = await axios.get(`${API_URL}/api/all-subjects`, { headers: getAuthHeaders() });  // URL actualizada
             const filteredMaterias = response.data
                 .filter(materia => userCredits >= (materia.requerimiento_Creditos || 0))
                 .reduce((acc, current) => {
