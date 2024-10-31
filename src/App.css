@@ -1,0 +1,161 @@
+:root {
+  --primary-color: #FFD700;
+  --secondary-color: #caac00;
+  --background-color: #0047ab3b;
+  --container-bg: #0047AB;
+  --text-color: #ffffff;
+  --error-color: #ffffff;
+}
+
+body {
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.App {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+
+.container {
+  width: 100%;
+  max-width: 450px; /* Ajustado para dar más espacio */
+  padding: 40px;
+  border-radius: 20px;
+  background-color: var(--container-bg);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.container:hover {
+  transform: translateY(-5px);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: var(--text-color);
+  font-size: 24px;
+}
+
+form div {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select {
+  width: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background-color: #0047ab3b;
+}
+
+button {
+  width: 100%;
+  padding: 15px;
+  margin: 20px 0 10px;
+  background-color: var(--primary-color);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+.navbar-logout {
+  width: auto;
+  padding: 5px 10px;
+  margin: 0;
+  background-color: #ffffff;
+  color: rgb(0, 0, 0);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: normal;
+  transition: background-color 0.3s ease;
+}
+
+
+
+button:hover {
+  background-color: var(--secondary-color);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+.error {
+  color: var(--error-color);
+  margin-top: 15px;
+  text-align: center;
+  font-size: 14px;
+}
+
+p {
+  text-align: center;
+  color: rgb(255, 255, 255);
+  margin-top: 15px;
+}
+
+.success-msg{
+  color: green;
+}
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 480px) {
+  .container {
+    padding: 20px;
+    max-width: 95%; /* Permitir que el contenedor use más ancho en móviles */
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  select,
+  button {
+    font-size: 14px;
+    padding: 10px; /* Ajustar padding en móviles */
+  }
+}
+
+/* Pantallas medianas */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .container {
+    max-width: 600px;
+  }
+
+  h2 {
+    font-size: 22px;
+  }
+}
