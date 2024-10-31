@@ -31,7 +31,7 @@ const SeleccionHorarios = () => {
             const storedMaterias = JSON.parse(localStorage.getItem('selectedMaterias') || '[]');
             setSelectedMaterias(storedMaterias);
 
-            const franjasResponse = await axios.get(`${API_URL}/franjas-horarias`, { headers: getAuthHeaders() });
+            const franjasResponse = await axios.get(`${API_URL}/api/franjas-horarias`, { headers: getAuthHeaders() });
             console.log('Franjas horarias received:', franjasResponse.data);
             setFranjasHorarias(franjasResponse.data);
         } catch (error) {
@@ -119,7 +119,7 @@ const SeleccionHorarios = () => {
                 };
             });
 
-            await axios.post(`${API_URL}/guardar-horarios`, data, { headers: getAuthHeaders() });
+            await axios.post(`${API_URL}/api/guardar-horarios`, data, { headers: getAuthHeaders() });
             setSuccess('Horarios guardados exitosamente');
             setError(null);
             localStorage.removeItem('selectedMaterias');
