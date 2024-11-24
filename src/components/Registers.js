@@ -8,8 +8,16 @@ const Register = () => {
   const [message, setMessage] = useState('');
   const [isPasswordValid, setIsPasswordValid] = useState(false);
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
+  const [isUniversityEmail, setIsUniversityEmail] = useState(false);
 
   const API_URL = 'https://aplicacionbackweb-d5bxb7bvhefjgcd0.canadacentral-01.azurewebsites.net';
+
+  // Validación de correo electrónico de la universidad
+  useEffect(() => {
+    // Regex para validar el formato de correo de alumnos UACJ
+    const universityEmailRegex = /^al\d{6}@alumnos\.uacj\.mx$/;
+    setIsUniversityEmail(universityEmailRegex.test(email));
+  }, [email]);
 
   useEffect(() => {
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{6,}$/;
@@ -18,6 +26,12 @@ const Register = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    // Validaciones adicionales
+    if (!isUniversityEmail) {
+      setMessage('Solo se permiten correos de alumnos de la UACJ (@alumnos.uacj.mx)');
+      return;
+    }
 
     if (password !== confirmPassword) {
       setMessage('Las contraseñas no coinciden');
