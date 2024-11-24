@@ -9,22 +9,45 @@ const SeleccionHorarios = () => {
     const [success, setSuccess] = useState(null);
     const [loading, setLoading] = useState(true);
 
-   const API_URL = 'https://aplicacionbackweb-d5bxb7bvhefjgcd0.canadacentral-01.azurewebsites.net';
+    const API_URL = 'https://aplicacionbackweb-d5bxb7bvhefjgcd0.canadacentral-01.azurewebsites.net';
 
-   const diasCombinaciones = [
-    { id: 1, dias: ['Lunes', 'Miércoles'] },
-    { id: 2, dias: ['Martes', 'Jueves'] },
-    { id: 3, dias: ['Lunes', 'Miércoles', 'Viernes'] },
-    { id: 4, dias: ['Martes', 'Jueves', 'Viernes'] },
-    { id: 5, dias: ['Lunes', 'Miércoles', 'Jueves'] },
-    { id: 6, dias: ['Martes', 'Miércoles', 'Jueves'] }
-];
+    const diasCombinaciones = [
+        { id: 1, dias: ['Lunes', 'Miércoles'] },
+        { id: 2, dias: ['Martes', 'Jueves'] },
+        { id: 3, dias: ['Lunes', 'Miércoles', 'Viernes'] },
+        { id: 4, dias: ['Martes', 'Jueves', 'Viernes'] },
+        { id: 5, dias: ['Lunes', 'Miércoles', 'Jueves'] },
+        { id: 6, dias: ['Martes', 'Miércoles', 'Jueves'] }
+    ];
 
+    // Constantes para los límites de IDs
+    const ID_LIMITE_MATUTINO = 18; // Las primeras 18 materias
 
     const getAuthHeaders = useCallback(() => {
         const token = localStorage.getItem('token');
         return token ? { 'Authorization': `Bearer ${token}` } : {};
     }, []);
+
+    // Función para determinar si una franja horaria es matutina o vespertina
+    const esHorarioVespertino = (horaInicio) => {
+        const hora = parseInt(horaInicio.split(':')[0]);
+        return hora >= 13; // Consideramos vespertino después de la 1 PM
+    };
+
+    // Función para determinar si una materia debe ser vespertina basada en su ID
+    const requiereHorarioVespertino = (materiaId) => {
+        return materiaId > ID_LIMITE_MATUTINO;
+    };
+
+    // Función para filtrar franjas horarias según el ID de la materia
+    const getFranjasDisponibles = (materiaId) => {
+        const debeSerVespertino = requiereHorarioVespertino(materiaId);
+        
+        return franjasHorarias.filter(franja => {
+            const esVespertino = esHorarioVespertino(franja.hora_inicio);
+            return debeSerVespertino ? esVespertino : !esVespertino;
+        });
+    };
 
     const fetchData = useCallback(async () => {
         try {
@@ -46,52 +69,45 @@ const SeleccionHorarios = () => {
         fetchData();
     }, [fetchData]);
 
-    // Nueva función para verificar conflictos de horario
     const checkHorarioConflict = (materiaId, combinacionId, franjaId) => {
-        // Si no hay combinación o franja seleccionada, no hay conflicto
         if (!combinacionId || !franjaId) return false;
-
-        // Obtener los días de la combinación seleccionada
         const diasSeleccionados = diasCombinaciones.find(c => c.id === parseInt(combinacionId)).dias;
 
-        // Revisar todas las materias existentes
         for (const [existingMateriaId, horario] of Object.entries(selectedHorarios)) {
-            // Ignorar la materia actual que estamos modificando
             if (existingMateriaId === materiaId) continue;
-
-            // Si el horario existente no está completo, ignorarlo
             if (!horario.combinacionId || !horario.franjaId) continue;
 
-            // Obtener los días del horario existente
             const diasExistentes = diasCombinaciones.find(c => c.id === parseInt(horario.combinacionId)).dias;
-
-            // Verificar si hay días en común
             const diasComunes = diasSeleccionados.some(dia => diasExistentes.includes(dia));
 
-            // Si hay días en común y la franja horaria es la misma, hay conflicto
             if (diasComunes && parseInt(horario.franjaId) === parseInt(franjaId)) {
                 return true;
             }
         }
-
         return false;
     };
 
     const handleHorarioSelection = (materiaId, combinacionId, franjaId) => {
-        // Crear el nuevo estado tentativo
+        const franjasDisponibles = getFranjasDisponibles(materiaId);
+
+        // Verificar si la franja seleccionada está dentro de las franjas disponibles
+        if (franjaId && !franjasDisponibles.some(f => f.franja_id === parseInt(franjaId))) {
+            const tipoHorario = requiereHorarioVespertino(materiaId) ? 'vespertino' : 'matutino';
+            setError(`Esta materia debe ser programada en horario ${tipoHorario}`);
+            return;
+        }
+
         const newHorario = {
             ...selectedHorarios[materiaId],
             combinacionId: combinacionId || selectedHorarios[materiaId]?.combinacionId,
             franjaId: franjaId || selectedHorarios[materiaId]?.franjaId
         };
 
-        // Verificar si hay conflicto
         if (checkHorarioConflict(materiaId, newHorario.combinacionId, newHorario.franjaId)) {
             setError('Ya existe una materia programada en ese horario');
             return;
         }
 
-        // Si no hay conflicto, actualizar el estado
         setError(null);
         setSelectedHorarios(prev => ({
             ...prev,
@@ -113,7 +129,7 @@ const SeleccionHorarios = () => {
                     materia_id: materia.materia_id,
                     dia_1: diasSeleccionados[0],
                     dia_2: diasSeleccionados[1],
-                    dia_3: diasSeleccionados[2],
+                    dia_3: diasSeleccionados[2] || null,
                     franja_id: parseInt(horario.franjaId),
                     semestre: 1
                 };
@@ -139,9 +155,16 @@ const SeleccionHorarios = () => {
             <h2 className="titulo-materias">Selección de Horarios</h2>
             {error && <p style={{color: 'red'}}>{error}</p>}
             {success && <p style={{color: 'green'}}>{success}</p>}
-            {selectedMaterias.map(materia => (
+            {selectedMaterias.map((materia) => (
                 <div className="materia-item" key={materia.materia_id}>
-                    <h3 className="label-materia">{materia.materia_name}</h3>
+                    <h3 className="label-materia">
+                        {materia.materia_name}
+                        <span className="horario-tipo">
+                            {requiereHorarioVespertino(materia.materia_id) 
+                                ? " (Horario Vespertino)"
+                                : " (Horario Matutino)"}
+                        </span>
+                    </h3>
                     {diasCombinaciones.length > 0 && (
                         <select
                             className="dropdown-horario"
@@ -160,24 +183,22 @@ const SeleccionHorarios = () => {
                             ))}
                         </select>
                     )}
-                    {franjasHorarias.length > 0 && (
-                        <select
-                            className="dropdown-horario"
-                            value={selectedHorarios[materia.materia_id]?.franjaId || ""}
-                            onChange={(e) =>
-                                handleHorarioSelection(materia.materia_id, selectedHorarios[materia.materia_id]?.combinacionId, e.target.value)
-                            }
-                        >
-                            <option value="" disabled>
-                                Selecciona Horario
+                    <select
+                        className="dropdown-horario"
+                        value={selectedHorarios[materia.materia_id]?.franjaId || ""}
+                        onChange={(e) =>
+                            handleHorarioSelection(materia.materia_id, selectedHorarios[materia.materia_id]?.combinacionId, e.target.value)
+                        }
+                    >
+                        <option value="" disabled>
+                            Selecciona Horario
+                        </option>
+                        {getFranjasDisponibles(materia.materia_id).map((franja) => (
+                            <option key={franja.franja_id} value={franja.franja_id}>
+                                {franja.hora_inicio} - {franja.hora_fin}
                             </option>
-                            {franjasHorarias.map((franja) => (
-                                <option key={franja.franja_id} value={franja.franja_id}>
-                                    {franja.hora_inicio} - {franja.hora_fin}
-                                </option>
-                            ))}
-                        </select>
-                    )}
+                        ))}
+                    </select>
                 </div>
             ))}
             <button className="boton-guardar" onClick={handleSubmit}>Guardar Selección</button>
